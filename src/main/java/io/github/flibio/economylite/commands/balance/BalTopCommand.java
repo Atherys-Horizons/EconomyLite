@@ -1,26 +1,5 @@
 /*
- * This file is part of EconomyLite, licensed under the MIT License (MIT).
- *
- * Copyright (c) 2015 - 2017 Flibio
- * Copyright (c) Contributors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * This file is part of EconomyLite, licensed under the MIT License (MIT). See the LICENSE file at the root of this project for more information.
  */
 package io.github.flibio.economylite.commands.balance;
 
@@ -103,9 +82,8 @@ public class BalTopCommand extends BaseCommandExecutor<CommandSource> {
                 label = current.getDisplayName();
             }
             src.sendMessage(messages.getMessage(
-                    "command.baltop.data",
-                    ImmutableMap.of("position", Text.of(count), "name", Text.of(e.getKey()), "balance",
-                            Text.of(String.format(Locale.ENGLISH, "%,.2f", e.getValue())), "label", label)));
+                    "command.baltop.data", "position", Integer.toString(count), "name", e.getKey(), "balance",
+                    String.format(Locale.ENGLISH, "%,.2f", e.getValue()), "label", label.toPlain()));
             count++;
         });
         Text toSend = Text.of();
@@ -124,8 +102,9 @@ public class BalTopCommand extends BaseCommandExecutor<CommandSource> {
                             .onClick(TextActions.runCommand("/baltop " + (pageNumber + 1)))
                             .onHover(TextActions.showText(Text.of(TextColors.GREEN, "NEXT"))).build()).build();
         }
-        if (!toSend.toPlain().isEmpty())
+        if (!toSend.toPlain().isEmpty()) {
             src.sendMessage(toSend);
+        }
         count = 0;
     }
 }

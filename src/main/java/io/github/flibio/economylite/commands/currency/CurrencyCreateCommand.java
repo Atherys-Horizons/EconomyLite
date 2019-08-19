@@ -1,26 +1,5 @@
 /*
- * This file is part of EconomyLite, licensed under the MIT License (MIT).
- *
- * Copyright (c) 2015 - 2017 Flibio
- * Copyright (c) Contributors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * This file is part of EconomyLite, licensed under the MIT License (MIT). See the LICENSE file at the root of this project for more information.
  */
 package io.github.flibio.economylite.commands.currency;
 
@@ -31,6 +10,7 @@ import io.github.flibio.utils.commands.AsyncCommand;
 import io.github.flibio.utils.commands.BaseCommandExecutor;
 import io.github.flibio.utils.commands.Command;
 import io.github.flibio.utils.commands.ParentCommand;
+import io.github.flibio.utils.config.ConfigManager;
 import io.github.flibio.utils.file.FileManager;
 import io.github.flibio.utils.message.MessageStorage;
 import org.spongepowered.api.command.CommandSource;
@@ -48,7 +28,7 @@ public class CurrencyCreateCommand extends BaseCommandExecutor<CommandSource> {
 
     private MessageStorage messageStorage = EconomyLite.getMessageStorage();
     private CurrencyEconService currencyService = EconomyLite.getCurrencyService();
-    private FileManager configManager = EconomyLite.getFileManager();
+    private ConfigManager manager = EconomyLite.getCurrencyManager();
 
     @Override
     public Builder getCommandSpecBuilder() {
@@ -77,9 +57,10 @@ public class CurrencyCreateCommand extends BaseCommandExecutor<CommandSource> {
                 Currency currency = new LiteCurrency(singular, plural, symbol, false, 2);
                 currencyService.addCurrency(currency);
                 String configId = currency.getId().replaceAll("economylite:", "");
-                configManager.setValue("currencies.conf", configId + ".singular", String.class, currency.getDisplayName().toPlain());
-                configManager.setValue("currencies.conf", configId + ".plural", String.class, currency.getPluralDisplayName().toPlain());
-                configManager.setValue("currencies.conf", configId + ".symbol", String.class, currency.getSymbol().toPlain());
+                manager.forceValue(currency.getDisplayName().toPlain(), configId, ".singular");
+                manager.forceValue(currency.getPluralDisplayName().toPlain(), configId, ".plural");
+                manager.forceValue(currency.getSymbol().toPlain(), configId, ".symbol");
+                manager.save();
                 src.sendMessage(messageStorage.getMessage("command.currency.created", "currency", currency.getDisplayName().toPlain()));
             }
         } else {

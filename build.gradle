@@ -26,8 +26,7 @@ repositories {
 
 dependencies {
     compile "org.spongepowered:spongeapi:${project.apiVersion}"
-    compile 'com.github.flibio:updatifier:v1.4.0:api'
-    compile 'com.github.flibiostudio:utils:5f41eac'
+    compile 'com.github.flibiostudio:utils:164f3b6'
 }
 
 shadowJar {
@@ -39,12 +38,9 @@ shadowJar {
     archiveName = "EconomyLite-${project.apiVersion.minus("-SNAPSHOT")}-${bVer}${buildNumber}.jar"
 
     dependencies {
-        include dependency('net.minecrell.mcstats:statslite-sponge')
-        include dependency('com.github.flibio:updatifier')
         include dependency('com.github.flibiostudio:utils')
     }
-    
-    relocate 'me.flibio.updatifier', 'io.github.flibio.economylite.updatifier'
+
     relocate 'io.github.flibio.utils', 'io.github.flibio.economylite.utils'
 }
 
@@ -56,15 +52,15 @@ license {
 
     // The project properties to use
     ext.name = project.name
-    ext.owner = project.owner
-    ext.inceptionYear = project.inceptionYear
-    ext.currentYear = project.currentYear
 
     // The file that contains the license header
     header file('HEADER.txt')
 
     // The source sets to apply the license to
     sourceSets = project.sourceSets
+
+    // Exclude properties files
+    exclude "**/*.properties"
 
     ignoreFailures false
     strictCheck true

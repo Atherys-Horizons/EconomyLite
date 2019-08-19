@@ -1,26 +1,5 @@
 /*
- * This file is part of EconomyLite, licensed under the MIT License (MIT).
- *
- * Copyright (c) 2015 - 2017 Flibio
- * Copyright (c) Contributors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * This file is part of EconomyLite, licensed under the MIT License (MIT). See the LICENSE file at the root of this project for more information.
  */
 package io.github.flibio.economylite.commands;
 
@@ -31,6 +10,7 @@ import io.github.flibio.utils.commands.AsyncCommand;
 import io.github.flibio.utils.commands.BaseCommandExecutor;
 import io.github.flibio.utils.commands.Command;
 import io.github.flibio.utils.message.MessageStorage;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
@@ -70,7 +50,7 @@ public class PayCommand extends BaseCommandExecutor<Player> {
                 src.sendMessage(messageStorage.getMessage("command.pay.invalid"));
             } else {
                 User target = args.<User>getOne("player").get();
-                if (!EconomyLite.isEnabled("confirm-offline-payments") || target.isOnline()) {
+                if (!EconomyLite.getConfigManager().getValue(Boolean.class, false, "confirm-offline-payments") || target.isOnline()) {
                     // Complete the payment
                     pay(target, amount, src);
                 } else {
@@ -96,19 +76,20 @@ public class PayCommand extends BaseCommandExecutor<Player> {
             Optional<UniqueAccount> tOpt = ecoService.getOrCreateAccount(target.getUniqueId());
             if (uOpt.isPresent() && tOpt.isPresent()) {
                 if (uOpt.get()
-                        .transfer(tOpt.get(), ecoService.getDefaultCurrency(), amount, Cause.of(EventContext.empty(),(EconomyLite.getInstance())))
+                        .transfer(tOpt.get(), ecoService.getDefaultCurrency(), amount, Cause.of(EventContext.empty(), (EconomyLite.getInstance())))
                         .getResult().equals(ResultType.SUCCESS)) {
                     Text label = ecoService.getDefaultCurrency().getPluralDisplayName();
                     if (amount.equals(BigDecimal.ONE)) {
                         label = ecoService.getDefaultCurrency().getDisplayName();
                     }
-                    src.sendMessage(messageStorage.getMessage("command.pay.success", "target", Text.of(targetName), "amountandlabel",
-                            Text.of(String.format(Locale.ENGLISH, "%,.2f", amount) + " ").toBuilder().append(label).build()));
-                    if (target instanceof Player) {
-                        ((Player) target).sendMessage(messageStorage.getMessage("command.pay.target", "amountandlabel",
-                                Text.of(String.format(Locale.ENGLISH, "%,.2f", amount) + " ").toBuilder().append(label).build(), "sender",
-                                uOpt.get().getDisplayName()));
-                    }
+                    src.sendMessage(messageStorage.getMessage("command.pay.success", "target", targetName, "amountandlabel",
+                            String.format(Locale.ENGLISH, "%,.2f", amount) + " " + label.toPlain()));
+                    final Text curLabel = label;
+                    Sponge.getServer().getPlayer(target.getUniqueId()).ifPresent(p -> {
+                        p.sendMessage(messageStorage.getMessage("command.pay.target", "amountandlabel",
+                                String.format(Locale.ENGLISH, "%,.2f", amount) + " " + curLabel.toPlain(), "sender",
+                                uOpt.get().getDisplayName().toPlain()));
+                    });
                 } else {
                     src.sendMessage(messageStorage.getMessage("command.pay.failed", "target", targetName));
                 }

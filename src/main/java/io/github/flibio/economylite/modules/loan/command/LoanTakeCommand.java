@@ -1,26 +1,5 @@
 /*
- * This file is part of EconomyLite, licensed under the MIT License (MIT).
- *
- * Copyright (c) 2015 - 2017 Flibio
- * Copyright (c) Contributors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * This file is part of EconomyLite, licensed under the MIT License (MIT). See the LICENSE file at the root of this project for more information.
  */
 package io.github.flibio.economylite.modules.loan.command;
 
@@ -39,6 +18,7 @@ import org.spongepowered.api.command.spec.CommandSpec.Builder;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -74,7 +54,7 @@ public class LoanTakeCommand extends BaseCommandExecutor<Player> {
             if (dOpt.isPresent()) {
                 double loanBalance = dOpt.get();
                 // Notify player of interest rate
-                src.sendMessage(messages.getMessage("module.loan.interest", "rate", Text.of(module.getInterestRate())));
+                src.sendMessage(messages.getMessage("module.loan.interest", "rate", Double.toString(module.getInterestRate())));
                 // Check how much loan they can take out
                 double maxLoan = (module.getMaxLoan() - loanBalance) / module.getInterestRate();
                 if (maxLoan <= 0) {
@@ -84,21 +64,20 @@ public class LoanTakeCommand extends BaseCommandExecutor<Player> {
                 if (maxLoan < loanAmount) {
                     // Offer the player a smaller loan
                     src.sendMessage(messages.getMessage("module.loan.partial"));
-                    src.sendMessage(messages.getMessage("module.loan.ask", "amount",
-                            Text.of(String.format(Locale.ENGLISH, "%,.2f", maxLoan)), "label", getPrefix(maxLoan, cur)));
+                    src.sendMessage(messages.getMessage("module.loan.ask", "amount", String.format(Locale.ENGLISH, "%,.2f", maxLoan), "label",
+                            getPrefix(maxLoan, cur)));
                     double total = maxLoan * module.getInterestRate();
-                    src.sendMessage(messages.getMessage("module.loan.payment", "amount",
-                            Text.of(String.format(Locale.ENGLISH, "%,.2f", total)), "label", getPrefix(total, cur)));
+                    src.sendMessage(messages.getMessage("module.loan.payment", "amount", String.format(Locale.ENGLISH, "%,.2f", total), "label",
+                            getPrefix(total, cur)));
                     module.tableLoans.remove(uuid);
                     module.tableLoans.put(uuid, maxLoan);
                 } else {
                     // Ask the player if they want a full loan
-                    src.sendMessage(messages.getMessage("module.loan.ask", "amount", Text.of(String.format(Locale.ENGLISH, "%,.2f", loanAmount)),
+                    src.sendMessage(messages.getMessage("module.loan.ask", "amount", String.format(Locale.ENGLISH, "%,.2f", loanAmount),
                             "label", getPrefix(loanAmount, cur)));
                     double total = loanAmount * module.getInterestRate();
-                    src.sendMessage(messages.getMessage("module.loan.payment", "amount",
-                            Text.of(String.format(Locale.ENGLISH, "%,.2f", total)), "label", getPrefix(total, cur)));
-
+                    src.sendMessage(messages.getMessage("module.loan.payment", "amount", String.format(Locale.ENGLISH, "%,.2f", total), "label",
+                            getPrefix(total, cur)));
                     src.sendMessage(LoanTextUtils.yesOrNo("/loan accept", "/loan deny"));
                     module.tableLoans.remove(uuid);
                     module.tableLoans.put(uuid, loanAmount);
@@ -111,12 +90,12 @@ public class LoanTakeCommand extends BaseCommandExecutor<Player> {
         }
     }
 
-    private Text getPrefix(double amnt, Currency cur) {
+    private String getPrefix(double amnt, Currency cur) {
         Text label = cur.getPluralDisplayName();
         if (amnt == 1.0) {
             label = cur.getDisplayName();
         }
-        return label;
+        return TextSerializers.FORMATTING_CODE.serialize(label);
     }
 
 }
